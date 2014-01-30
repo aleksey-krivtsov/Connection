@@ -1,0 +1,38 @@
+{
+    "name": "imhonet/connection",
+    "type": "library",
+    "license": "MIT",
+    "support": {
+        "email": "web@imhoclub.ru"
+    },
+
+    "autoload": {
+        "psr-4" : {
+            "Imhonet\\Connection\\" : "src/"
+        }
+    },
+
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "couchbase/php-ext-couchbase",
+                "version": "dev-master",
+                "source": {
+                    "url": "http://review.couchbase.org/p/php-ext-couchbase.git",
+                    "type": "git",
+                    "reference": "master"
+                }
+            }
+        }
+    ],
+
+    "require": {
+        "php": ">=5.4"
+    },
+
+    "require-dev": {
+        "phpunit/phpunit": "3.*",
+        "couchbase/php-ext-couchbase": "dev-master"
+    }
+}
