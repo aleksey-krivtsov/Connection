@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit colors="true">
+    <testsuites>
+        <testsuite name="Resources">
+            <directory>./tests/Resource/</directory>
+        </testsuite>
+        <testsuite name="Queries">
+            <directory>./tests/Query/</directory>
+        </testsuite>
+        <testsuite name="DataFormats">
+            <directory>./tests/DataFormat/</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
