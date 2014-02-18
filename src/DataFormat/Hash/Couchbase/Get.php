@@ -2,9 +2,9 @@
 
 namespace Imhonet\Connection\DataFormat\Hash\Couchbase;
 
-use Imhonet\Connection\DataFormat\IDataFormat;
+use Imhonet\Connection\DataFormat\IHash;
 
-class Get implements IDataFormat
+class Get implements IHash
 {
     /**
      * @var array
