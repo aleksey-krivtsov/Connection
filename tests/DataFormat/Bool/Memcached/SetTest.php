@@ -25,7 +25,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
     public function testData()
     {
         $this->formater->setData(true);
-        $this->assertEquals($this->formater->formatData(), array());
+        $this->assertEquals(array(), $this->formater->formatData());
     }
 
     public function testValue()

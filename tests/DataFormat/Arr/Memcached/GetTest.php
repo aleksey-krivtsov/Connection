@@ -34,7 +34,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
     public function testData()
     {
         $this->formater->setData($this->data);
-        $this->assertEquals($this->formater->formatData(), $this->data);
+        $this->assertEquals($this->data, $this->formater->formatData());
     }
 
     public function testValue()
@@ -46,7 +46,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
     public function testFailure()
     {
         $this->formater->setData(false);
-        $this->assertNotEquals($this->formater->formatData(), array());
+        $this->assertNotEquals(array(), $this->formater->formatData());
     }
 
     protected function tearDown()

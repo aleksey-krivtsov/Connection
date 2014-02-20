@@ -37,8 +37,8 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
             ->setPort(self::PORT)
         ;
         $this->assertEquals(
-            $this->resource->getHandle()->getServerList(),
-            array(array('host' => self::HOST, 'port' => self::PORT))
+            array(array('host' => self::HOST, 'port' => self::PORT)),
+            $this->resource->getHandle()->getServerList()
         );
     }
 
@@ -49,11 +49,11 @@ class MemcachedTest extends \PHPUnit_Framework_TestCase
             ->setPort(self::PORT . Memcached::DELIMITER . self::PORT)
         ;
         $this->assertEquals(
-            $this->resource->getHandle()->getServerList(),
             array(
                 array('host' => self::HOST, 'port' => self::PORT),
                 array('host' => self::HOST, 'port' => self::PORT),
-            )
+            ),
+            $this->resource->getHandle()->getServerList()
         );
     }
 

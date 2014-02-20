@@ -35,22 +35,22 @@ class GetTest extends \PHPUnit_Framework_TestCase
     public function testExecute()
     {
         $this->query->setResource($this->getResource());
-        $this->assertEquals($this->query->execute(), $this->data);
-        $this->assertEquals($this->query->getErrorCode(), 0);
+        $this->assertEquals($this->data, $this->query->execute());
+        $this->assertEquals(0, $this->query->getErrorCode());
     }
 
     public function testCount()
     {
         $this->query->setResource($this->getResource());
-        $this->assertEquals($this->query->getCount(), sizeof($this->data));
-        $this->assertEquals($this->query->getCountTotal(), sizeof($this->data));
+        $this->assertEquals(sizeof($this->data), $this->query->getCount());
+        $this->assertEquals(sizeof($this->data), $this->query->getCountTotal());
     }
 
     public function testFailure()
     {
         $this->query->setResource($this->getResourceFailed());
-        $this->assertEquals($this->query->execute(), false);
-        $this->assertNotEquals($this->query->getErrorCode(), 0);
+        $this->assertEquals(false, $this->query->execute());
+        $this->assertNotEquals(0, $this->query->getErrorCode());
     }
 
     /**
