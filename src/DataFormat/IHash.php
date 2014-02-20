@@ -2,7 +2,7 @@
 
 namespace Imhonet\Connection\DataFormat;
 
-interface IHash
+interface IHash extends IDataFormat
 {
     /**
      * @param mixed $data

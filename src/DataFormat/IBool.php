@@ -2,7 +2,7 @@
 
 namespace Imhonet\Connection\DataFormat;
 
-interface IBool
+interface IBool extends IDataFormat
 {
     /**
      * @param mixed $data

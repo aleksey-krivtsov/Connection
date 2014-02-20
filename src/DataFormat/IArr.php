@@ -2,7 +2,7 @@
 
 namespace Imhonet\Connection\DataFormat;
 
-interface IArr
+interface IArr extends IDataFormat
 {
     /**
      * @param mixed $data
