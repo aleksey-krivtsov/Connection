@@ -39,11 +39,25 @@ class SetTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->query->getErrorCode());
     }
 
+    public function testCount()
+    {
+        $this->query->setResource($this->getResource());
+        $this->assertEquals(sizeof($this->data), $this->query->getCount());
+        $this->assertEquals(sizeof($this->data), $this->query->getCountTotal());
+    }
+
     public function testFailure()
     {
         $this->query->setResource($this->getResourceFailed());
         $this->assertEquals(false, $this->query->execute());
         $this->assertNotEquals(0, $this->query->getErrorCode());
+    }
+
+    public function testFailureCount()
+    {
+        $this->query->setResource($this->getResourceFailed());
+        $this->assertEquals(0, $this->query->getCount());
+        $this->assertEquals(0, $this->query->getCountTotal());
     }
 
     /**

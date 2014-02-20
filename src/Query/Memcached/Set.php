@@ -76,7 +76,7 @@ class Set extends Base
      */
     public function getCountTotal()
     {
-        return null;
+        return $this->getCount();
     }
 
     /**
@@ -84,7 +84,7 @@ class Set extends Base
      */
     public function getCount()
     {
-        return null;
+        return $this->isError() ? 0 : sizeof($this->data);
     }
 
     /**
