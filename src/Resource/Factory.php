@@ -9,6 +9,8 @@ class Factory implements IConnect
     const TYPE_RCMD = 'rcmd';
     const TYPE_MONGO = 'mongo';
     const TYPE_COUCHBASE = 'couchbase';
+    const TYPE_MEMCACHE = 'memcache';
+    const TYPE_MEMCACHED = 'memcached';
 
     private static $instance;
     private $resources = array();
@@ -146,6 +148,12 @@ class Factory implements IConnect
             case self::TYPE_COUCHBASE:
                 $resource = $this->getCouchbase();
                 break;
+            case self::TYPE_MEMCACHE:
+                $resource = $this->getMemcache();
+                break;
+            case self::TYPE_MEMCACHED:
+                $resource = $this->getMemcached();
+                break;
             default:
                 throw new \InvalidArgumentException();
         }
@@ -161,6 +169,26 @@ class Factory implements IConnect
             ->setUser($this->params['user'])
             ->setPassword($this->params['password'])
             ->setDatabase($this->params['database'])
+        ;
+
+        return $resource;
+    }
+
+    private function getMemcached()
+    {
+        $resource = new Memcached();
+        $resource->setHost($this->params['host'])
+            ->setPort($this->params['port'])
+        ;
+
+        return $resource;
+    }
+
+    private function getMemcache()
+    {
+        $resource = new Memcache();
+        $resource->setHost($this->params['host'])
+            ->setPort($this->params['port'])
         ;
 
         return $resource;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Imhonet\Connection\DataFormat\Hash\Couchbase;
+namespace Imhonet\Connection\DataFormat\Arr\Memcache;
 
-use Imhonet\Connection\DataFormat\IHash;
+use Imhonet\Connection\DataFormat\IArr;
 
-class Get implements IHash
+class Get implements IArr
 {
     /**
      * @var array
@@ -26,7 +26,7 @@ class Get implements IHash
      */
     public function formatData()
     {
-        return sizeof($this->data) ? json_decode(current($this->data), true) : array();
+        return $this->data;
     }
 
     /**

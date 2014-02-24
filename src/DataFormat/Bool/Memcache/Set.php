@@ -1,10 +1,10 @@
 <?php
 
-namespace Imhonet\Connection\DataFormat\Hash\Couchbase;
+namespace Imhonet\Connection\DataFormat\Bool\Memcache;
 
-use Imhonet\Connection\DataFormat\IHash;
+use Imhonet\Connection\DataFormat\IBool;
 
-class Get implements IHash
+class Set implements IBool
 {
     /**
      * @var array
@@ -26,7 +26,7 @@ class Get implements IHash
      */
     public function formatData()
     {
-        return sizeof($this->data) ? json_decode(current($this->data), true) : array();
+        return array();
     }
 
     /**
@@ -34,6 +34,7 @@ class Get implements IHash
      */
     public function formatValue()
     {
+        return $this->data;
     }
 
 }
