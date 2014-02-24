@@ -1,7 +1,7 @@
 <?php
 
-$loader = require __DIR__.'/vendor/autoload.php';
+error_reporting(E_ALL);
 
-//use Imhonet\Connection;
+$loader = require __DIR__.'/vendor/autoload.php';
 
 return $loader;
