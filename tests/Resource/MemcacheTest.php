@@ -37,9 +37,9 @@ class MemcacheTest extends \PHPUnit_Framework_TestCase
             ->setHost(self::HOST)
             ->setPort(self::PORT)
         ;
-        $this->assertArrayHasKey(
-            self::HOST . ':' . self::PORT,
-            $this->resource->getHandle()->getExtendedStats()
+        $this->assertNotEquals(
+            false,
+            $this->resource->getHandle()->getServerStatus(self::HOST, self::PORT)
         );
     }
 
@@ -49,9 +49,13 @@ class MemcacheTest extends \PHPUnit_Framework_TestCase
             ->setHost(self::HOST . Memcache::DELIMITER . self::HOST)
             ->setPort(self::PORT . Memcache::DELIMITER . self::PORT_ALT)
         ;
-        $this->assertEquals(
-            array(self::HOST . ':' . self::PORT, self::HOST . ':' . self::PORT_ALT),
-            array_keys($this->resource->getHandle()->getExtendedStats())
+        $this->assertNotEquals(
+            false,
+            $this->resource->getHandle()->getServerStatus(self::HOST, self::PORT)
+        );
+        $this->assertNotEquals(
+            false,
+            $this->resource->getHandle()->getServerStatus(self::HOST, self::PORT_ALT)
         );
     }
 
