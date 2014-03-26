@@ -29,7 +29,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $this->assertInstanceOf('Imhonet\Connection\Query\Base', $this->query);
+        $this->assertInstanceOf('Imhonet\Connection\Query\Query', $this->query);
     }
 
     public function testExecute()

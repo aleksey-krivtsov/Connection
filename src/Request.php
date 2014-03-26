@@ -3,7 +3,7 @@
 namespace Imhonet\Connection;
 
 use Imhonet\Connection\DataFormat\IDataFormat;
-use Imhonet\Connection\Query\Base as Query;
+use Imhonet\Connection\Query\Query as Query;
 use Imhonet\Connection\Resource\IResource;
 
 class Request
@@ -87,6 +87,14 @@ class Request
     public function getCount()
     {
         return $this->query->getCount();
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLastId()
+    {
+        return $this->query->getLastId();
     }
 
     private function getFormater()

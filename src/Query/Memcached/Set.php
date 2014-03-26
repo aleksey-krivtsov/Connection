@@ -2,10 +2,10 @@
 
 namespace Imhonet\Connection\Query\Memcached;
 
-use Imhonet\Connection\Query\Base;
+use Imhonet\Connection\Query\Query;
 use Respect\Validation\Validator;
 
-class Set extends Base
+class Set extends Query
 {
     private $data = array();
     private $expire = 0;
@@ -44,23 +44,38 @@ class Set extends Base
     private function getResponse()
     {
         if ($this->response === null) {
-            $this->response = $this->getResource()->setMulti($this->data, $this->expire);
+            try {
+                $this->response = $this->getResource()->setMulti($this->data, $this->expire);
+            } catch (\Exception $e) {
+                $this->response = false;
+            }
         }
 
         return $this->response;
     }
 
     /**
+     * @inheritdoc
      * @return \Memcached
      */
-    private function getResource()
+    protected function getResource()
     {
-        return $this->resource->getHandle();
+        return parent::getResource();
     }
 
     private function isError()
     {
-        return $this->getResponse() === false && $this->getResource()->getResultCode();
+        $result = false;
+
+        if ($this->getResponse() === false) {
+            try {
+                $result = (bool) $this->getResource()->getResultCode();
+            } catch (\Exception $e) {
+                $result = true;
+            }
+        }
+
+        return $result;
     }
 
     /**

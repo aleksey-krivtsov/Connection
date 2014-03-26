@@ -2,10 +2,10 @@
 
 namespace Imhonet\Connection\Query\Memcache;
 
-use Imhonet\Connection\Query\Base;
+use Imhonet\Connection\Query\Query;
 use Respect\Validation\Validator;
 
-class Set extends Base
+class Set extends Query
 {
     private $data = array();
     private $expire = 0;
@@ -46,13 +46,20 @@ class Set extends Base
     {
         if ($this->response === null) {
             $this->response = true;
-            $resource = $this->getResource();
 
-            foreach ($this->data as $key => $value) {
-                if ($resource->set($key, $value, 0, $this->expire)) {
-                    ++$this->count;
-                } else {
-                    $this->response = false;
+            try {
+                $resource = $this->getResource();
+            } catch (\Exception $e) {
+                $this->response = false;
+            }
+
+            if (isset($resource)) {
+                foreach ($this->data as $key => $value) {
+                    if ($resource->set($key, $value, 0, $this->expire)) {
+                        ++$this->count;
+                    } else {
+                        $this->response = false;
+                    }
                 }
             }
         }
@@ -61,11 +68,12 @@ class Set extends Base
     }
 
     /**
+     * @inheritdoc
      * @return \Memcache
      */
-    private function getResource()
+    protected function getResource()
     {
-        return $this->resource->getHandle();
+        return parent::getResource();
     }
 
     private function isError()

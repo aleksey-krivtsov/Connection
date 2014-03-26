@@ -2,16 +2,11 @@
 
 namespace Imhonet\Connection\Query\Couchbase;
 
-use Imhonet\Connection\Query\Base;
+use Imhonet\Connection\Query\Query;
 
-class Get extends Base
+class Get extends Query
 {
     private $ids;
-
-    /**
-     * @var \CouchbaseException|null
-     */
-    private $error;
 
     /**
      * @var array|float
@@ -34,18 +29,23 @@ class Get extends Base
     private function getResponse()
     {
         if (!$this->hasResponse()) {
-            /** @type $handle \Couchbase */
-            $handle = $this->resource->getHandle();
-
             try {
-                $this->response = $handle->getMulti($this->ids);
-            } catch (\CouchbaseException $e) {
+                $this->response = $this->getResource()->getMulti($this->ids);
+            } catch (\Exception $e) {
                 $this->response = null;
-                $this->error = $e;
             }
         }
 
         return $this->response;
+    }
+
+    /**
+     * @inheritdoc
+     * @return \Couchbase
+     */
+    protected function getResource()
+    {
+        return parent::getResource();
     }
 
     private function hasResponse()
