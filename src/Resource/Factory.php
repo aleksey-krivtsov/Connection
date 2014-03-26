@@ -2,9 +2,12 @@
 
 namespace Imhonet\Connection\Resource;
 
+use Imhonet\Connection\Resource\PDO;
+
 class Factory implements IConnect
 {
     const TYPE_MYSQL = 'mysql';
+    const TYPE_MYSQL_PDO = 'mysql_pdo';
     const TYPE_HANDLERSOCKET = 'handlersocket';
     const TYPE_RCMD = 'rcmd';
     const TYPE_MONGO = 'mongo';
@@ -145,6 +148,9 @@ class Factory implements IConnect
     protected function createResource($type)
     {
         switch ($type) {
+            case self::TYPE_MYSQL_PDO:
+                $resource = $this->getMySQLPDO();
+                break;
             case self::TYPE_COUCHBASE:
                 $resource = $this->getCouchbase();
                 break;
@@ -157,6 +163,19 @@ class Factory implements IConnect
             default:
                 throw new \InvalidArgumentException();
         }
+
+        return $resource;
+    }
+
+    private function getMySQLPDO()
+    {
+        $resource = new PDO\MySQL();
+        $resource->setHost($this->params['host'])
+            ->setPort($this->params['port'])
+            ->setUser($this->params['user'])
+            ->setPassword($this->params['password'])
+            ->setDatabase($this->params['database'])
+        ;
 
         return $resource;
     }

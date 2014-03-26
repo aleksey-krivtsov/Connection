@@ -6,6 +6,7 @@ interface IResource extends IConnect
 {
     /**
      * @return mixed
+     * @throws \Exception
      */
     public function getHandle();
 

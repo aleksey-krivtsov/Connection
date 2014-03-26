@@ -4,8 +4,13 @@ namespace Imhonet\Connection\Query;
 
 use Imhonet\Connection\Resource\IResource;
 
-abstract class Base
+abstract class Query
 {
+    /**
+     * @var \Exception|null
+     */
+    protected $error;
+
     /**
      * @var IResource
      */
@@ -20,6 +25,22 @@ abstract class Base
         $this->resource = $resource;
 
         return $this;
+    }
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getResource()
+    {
+        try {
+            $resource = $this->resource->getHandle();
+        } catch (\Exception $e) {
+            $this->error = $e;
+            throw $e;
+        }
+
+        return $resource;
     }
 
     /**

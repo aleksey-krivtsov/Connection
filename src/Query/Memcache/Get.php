@@ -2,9 +2,9 @@
 
 namespace Imhonet\Connection\Query\Memcache;
 
-use Imhonet\Connection\Query\Base;
+use Imhonet\Connection\Query\Query;
 
-class Get extends Base
+class Get extends Query
 {
     private $keys;
 
@@ -29,18 +29,23 @@ class Get extends Base
     private function getResponse()
     {
         if ($this->response === null) {
-            $this->response = $this->getResource()->get($this->keys);
+            try {
+                $this->response = $this->getResource()->get($this->keys);
+            } catch (\Exception $e) {
+                $this->response = false;
+            }
         }
 
         return $this->response;
     }
 
     /**
+     * @inheritdoc
      * @return \Memcache
      */
-    private function getResource()
+    protected function getResource()
     {
-        return $this->resource->getHandle();
+        return parent::getResource();
     }
 
     private function isError()
