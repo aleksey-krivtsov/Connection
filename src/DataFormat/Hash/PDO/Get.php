@@ -20,7 +20,13 @@ class Get implements IHash
 
     public function formatData()
     {
-        return $this->data ? $this->data->fetch(\PDO::FETCH_ASSOC) : null;
+        if ($this->data) {
+            $result = $this->data->fetch(\PDO::FETCH_ASSOC);
+        } else {
+            $result = array();
+        }
+
+        return $result ? : array();
     }
 
     public function formatValue()
