@@ -25,7 +25,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
     public function testData()
     {
         $this->formater->setData($this->getStmt());
-        $this->assertInternalType( 'array', $this->formater->formatData());
+        $this->assertInternalType('array', $this->formater->formatData());
     }
 
     public function testValue()
@@ -37,7 +37,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
     public function testFailure()
     {
         $this->formater->setData(false);
-        $this->assertInternalType( 'array', $this->formater->formatData());
+        $this->assertInternalType('array', $this->formater->formatData());
     }
 
     public function getStmt()
