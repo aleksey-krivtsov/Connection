@@ -154,10 +154,4 @@ abstract class PDO extends Query
         return (int) $this->isError();
     }
 
-    public function __destruct()
-    {
-        if ($this->response) {
-            $this->response->closeCursor();
-        }
-    }
 }

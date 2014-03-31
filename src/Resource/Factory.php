@@ -29,6 +29,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setHost($host)
     {
@@ -39,6 +40,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setPort($port)
     {
@@ -49,6 +51,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setUser($user)
     {
@@ -59,6 +62,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setPassword($password)
     {
@@ -69,6 +73,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setDatabase($database)
     {
@@ -79,6 +84,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setTable($table)
     {
@@ -89,6 +95,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setIndexName($name)
     {
@@ -99,6 +106,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setIndexFields(array $fields)
     {
@@ -109,6 +117,7 @@ class Factory implements IConnect
 
     /**
      * @inheritdoc
+     * @return self
      */
     public function setIds($ids)
     {
@@ -171,7 +180,7 @@ class Factory implements IConnect
     {
         $resource = new PDO\MySQL();
         $resource->setHost($this->params['host'])
-            ->setPort($this->params['port'])
+            ->setPort(isset($this->params['port']) ? $this->params['port'] : null)
             ->setUser($this->params['user'])
             ->setPassword($this->params['password'])
             ->setDatabase($this->params['database'])
