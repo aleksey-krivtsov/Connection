@@ -35,6 +35,7 @@
 
     "require-dev": {
         "phpunit/phpunit": "4.0.*",
-        "couchbase/php-ext-couchbase": "dev-master"
+        "couchbase/php-ext-couchbase": "dev-master",
+        "neutron/sphinxsearch-api": "0.9.9"
     }
 }
