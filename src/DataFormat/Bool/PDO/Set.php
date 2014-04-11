@@ -7,7 +7,7 @@ use Imhonet\Connection\DataFormat\IBool;
 class Set implements IBool
 {
     /**
-     * @var \PDOStatement
+     * @var \PDOStatement|bool
      */
     protected $data;
 
@@ -34,7 +34,7 @@ class Set implements IBool
      */
     public function formatValue()
     {
-        return (bool) $this->data->rowCount();
+        return $this->data && $this->data->rowCount();
     }
 
 }
