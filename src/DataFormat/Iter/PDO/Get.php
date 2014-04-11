@@ -8,7 +8,7 @@ use Imhonet\Connection\DataFormat\IIter;
 class Get implements IIter
 {
     /**
-     * @var \PDOStatement
+     * @var \PDOStatement|bool
      */
     private $data;
 
@@ -21,7 +21,7 @@ class Get implements IIter
 
     public function formatData()
     {
-        return $this->data ? : new \PDOStatement();
+        return $this->data ? : new \EmptyIterator();
     }
 
     public function formatValue()

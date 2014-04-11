@@ -72,7 +72,7 @@ abstract class PDO extends Query
     }
 
     /**
-     * @inheritdoc
+     * @return \PDOStatement|bool
      */
     public function execute()
     {
@@ -86,7 +86,7 @@ abstract class PDO extends Query
                 $stmt = $this->getStmt();
             } catch (\Exception $e) {
                 $this->success = false;
-                $this->response = new \PDOStatement();
+                $this->response = false;
             }
 
             if (isset($stmt)) {
