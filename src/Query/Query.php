@@ -43,29 +43,4 @@ abstract class Query implements IQuery
         return $resource;
     }
 
-    /**
-     * @return mixed
-     */
-    abstract public function execute();
-
-    /**
-     * @return int
-     */
-    abstract public function getErrorCode();
-
-    /**
-     * @return int
-     */
-    abstract public function getCountTotal();
-
-    /**
-     * @return int
-     */
-    abstract public function getCount();
-
-    /**
-     * @return int|null
-     */
-    abstract public function getLastId();
-
 }

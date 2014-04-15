@@ -155,6 +155,11 @@ class Factory implements IConnect
         return $this->resources[$key];
     }
 
+    /**
+     * @param $type
+     * @return Couchbase|Memcache|Memcached|PDO\MySQL|Sphinx
+     * @throws \InvalidArgumentException
+     */
     protected function createResource($type)
     {
         switch ($type) {
