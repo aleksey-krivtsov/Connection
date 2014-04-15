@@ -112,7 +112,7 @@ class Request
     }
 
     /**
-     * @return $this
+     * @return IDataFormat
      */
     private function getFormater()
     {
