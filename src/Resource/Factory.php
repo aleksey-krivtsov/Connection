@@ -14,6 +14,7 @@ class Factory implements IConnect
     const TYPE_COUCHBASE = 'couchbase';
     const TYPE_MEMCACHE = 'memcache';
     const TYPE_MEMCACHED = 'memcached';
+    const TYPE_SPHINX = 'sphinx';
 
     private static $instance;
     private $resources = array();
@@ -169,6 +170,9 @@ class Factory implements IConnect
             case self::TYPE_MEMCACHED:
                 $resource = $this->getMemcached();
                 break;
+            case self::TYPE_SPHINX:
+                $resource = $this->getSphinx();
+                break;
             default:
                 throw new \InvalidArgumentException();
         }
@@ -176,6 +180,21 @@ class Factory implements IConnect
         return $resource;
     }
 
+    /**
+     * @return Sphinx
+     */
+    private function getSphinx()
+    {
+        $resource = new Sphinx();
+        $resource->setHost($this->params['host'])
+            ->setPort($this->params['port']);
+
+        return $resource;
+    }
+
+    /**
+     * @return PDO\MySQL
+     */
     private function getMySQLPDO()
     {
         $resource = new PDO\MySQL();
@@ -183,12 +202,14 @@ class Factory implements IConnect
             ->setPort(isset($this->params['port']) ? $this->params['port'] : null)
             ->setUser($this->params['user'])
             ->setPassword($this->params['password'])
-            ->setDatabase($this->params['database'])
-        ;
+            ->setDatabase($this->params['database']);
 
         return $resource;
     }
 
+    /**
+     * @return Couchbase
+     */
     private function getCouchbase()
     {
         $resource = new Couchbase();
@@ -196,28 +217,31 @@ class Factory implements IConnect
             ->setPort($this->params['port'])
             ->setUser($this->params['user'])
             ->setPassword($this->params['password'])
-            ->setDatabase($this->params['database'])
-        ;
+            ->setDatabase($this->params['database']);
 
         return $resource;
     }
 
+    /**
+     * @return Memcached
+     */
     private function getMemcached()
     {
         $resource = new Memcached();
         $resource->setHost($this->params['host'])
-            ->setPort($this->params['port'])
-        ;
+            ->setPort($this->params['port']);
 
         return $resource;
     }
 
+    /**
+     * @return Memcache
+     */
     private function getMemcache()
     {
         $resource = new Memcache();
         $resource->setHost($this->params['host'])
-            ->setPort($this->params['port'])
-        ;
+            ->setPort($this->params['port']);
 
         return $resource;
     }
@@ -294,6 +318,9 @@ class Factory implements IConnect
         return $this->params['ids'];
     }
 
+    /**
+     * @return void
+     */
     private function resetParams()
     {
         $this->params = array();
