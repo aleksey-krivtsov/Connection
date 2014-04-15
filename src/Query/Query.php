@@ -4,7 +4,7 @@ namespace Imhonet\Connection\Query;
 
 use Imhonet\Connection\Resource\IResource;
 
-abstract class Query
+abstract class Query implements IQuery
 {
     /**
      * @var \Exception|null

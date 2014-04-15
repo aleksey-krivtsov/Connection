@@ -3,13 +3,13 @@
 namespace Imhonet\Connection;
 
 use Imhonet\Connection\DataFormat\IDataFormat;
-use Imhonet\Connection\Query\Query as Query;
+use Imhonet\Connection\Query\IQuery;
 use Imhonet\Connection\Resource\IResource;
 
 class Request
 {
     /**
-     * @var Query
+     * @var IQuery
      */
     private $query;
 
@@ -26,10 +26,10 @@ class Request
     private $response = NAN;
 
     /**
-     * @param Query $query
+     * @param IQuery $query
      * @param IDataFormat $format
      */
-    public function __construct(Query $query, IDataFormat $format)
+    public function __construct(IQuery $query, IDataFormat $format)
     {
         $this->query = $query;
         $this->format = $format;
@@ -45,6 +45,9 @@ class Request
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     private function getResponse()
     {
         return !$this->hasResponse()
@@ -52,6 +55,9 @@ class Request
             : $this->response;
     }
 
+    /**
+     * @return bool
+     */
     private function hasResponse()
     {
         return !is_float($this->response) || !is_nan($this->response);
@@ -92,11 +98,22 @@ class Request
     /**
      * @return int|null
      */
+    public function getCountTotal()
+    {
+        return $this->query->getCountTotal();
+    }
+
+    /**
+     * @return int|null
+     */
     public function getLastId()
     {
         return $this->query->getLastId();
     }
 
+    /**
+     * @return $this
+     */
     private function getFormater()
     {
         return $this->format->setData($this->getResponse());
