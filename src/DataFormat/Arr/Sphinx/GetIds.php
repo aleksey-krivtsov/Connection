@@ -21,7 +21,7 @@ class GetIds implements IArr
 
     public function formatData()
     {
-        return $this->data === false ? array() : array_keys($this->data[0]['matches']);
+        return ($this->data === false || !isset($this->data[0]['matches'])) ? array() : array_keys($this->data[0]['matches']);
     }
 
     public function formatValue()

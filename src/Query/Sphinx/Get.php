@@ -7,12 +7,19 @@ use Imhonet\Connection\Query\Query;
 
 class Get extends Query
 {
+    const FILTER_VALUES = 'values';
+    const FILTER_EXCLUDE = 'exclude';
+
     private $index;
     private $search;
     private $limit;
     private $offset = 0;
     private $sort_field;
     private $sort_order = \SORT_ASC;
+    private $field_weights;
+    private $filter;
+    private $match_mode;
+    private $is_escape = true;
 
     /**
      * @var array|bool
@@ -72,6 +79,63 @@ class Get extends Query
     }
 
     /**
+     * @param array $field_weights
+     * @return $this
+     */
+    public function setFieldWeights(array $field_weights)
+    {
+        $this->field_weights = $field_weights;
+
+        return $this;
+    }
+
+    /**
+     * @param $attribute
+     * @param $values
+     * @param bool $exclude
+     * @return $this
+     */
+    public function addFilter($attribute, $values, $exclude = false)
+    {
+        $this->filter[$attribute] = [
+            self::FILTER_VALUES => $values,
+            self::FILTER_EXCLUDE => $exclude
+        ];
+
+        return $this;
+    }
+
+    /**
+     * @param $match_mode
+     * @return $this
+     */
+    public function setMatchMode($match_mode)
+    {
+        $this->match_mode = $match_mode;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMatchMode()
+    {
+        return $this->match_mode == \SORT_REGULAR ? \SPH_MATCH_EXTENDED : \SPH_MATCH_ALL;
+    }
+
+    /**
+     * @param bool $is_escape
+     * @return $this
+     */
+    public function setEscape($is_escape = true)
+    {
+        $this->is_escape = (bool) $is_escape;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function execute()
@@ -98,7 +162,26 @@ class Get extends Query
                     $sph->SetLimits($this->offset, $this->limit);
                 }
 
-                $sph->addQuery($sph->EscapeString($this->search), $this->index);
+                if ($this->field_weights) {
+                    $sph->SetFieldWeights($this->field_weights);
+                }
+
+                if ($this->filter) {
+                    foreach($this->filter as $attr => $data) {
+                        $sph->SetFilter($attr, $data[self::FILTER_VALUES], $data[self::FILTER_EXCLUDE]);
+                    }
+                }
+
+                if ($this->match_mode) {
+                    $sph->SetMatchMode($this->getMatchMode());
+                }
+
+                if ($this->is_escape) {
+                    $this->search = $this->prepareQuery($this->search);
+                }
+
+                $sph->addQuery($this->search, $this->index);
+
 
                 $this->response = $sph->runQueries();
                 $this->success = $this->response !== false;
@@ -106,6 +189,24 @@ class Get extends Query
         }
 
         return $this->response;
+    }
+
+    /**
+     * @param string $query
+     * @return string
+     */
+    protected function prepareQuery($query)
+    {
+        $sph = $this->getResource();
+
+        if (isset($sph)) {
+            $query = htmlspecialchars_decode(stripslashes($query));
+            $query = strtolower(trim(str_replace('"', '', $query)));
+            //@TODO проверить: в sphinxapi похоже бага с эскейпингом слеша
+            $query = str_replace('/', ' ', $query);
+        }
+
+        return $sph->EscapeString($query);
     }
 
     private function hasResponse()
@@ -122,9 +223,16 @@ class Get extends Query
         return parent::getResource();
     }
 
+    /**
+     * @return int
+     */
     private function getSortOrder()
     {
-        return $this->sort_order == \SORT_DESC ? \SPH_SORT_ATTR_DESC : \SPH_SORT_ATTR_ASC;
+        if ($this->sort_order != \SORT_REGULAR) {
+            return $this->sort_order == \SORT_DESC ? \SPH_SORT_ATTR_DESC : \SPH_SORT_ATTR_ASC;
+        } else {
+            return \SPH_SORT_EXPR;
+        }
     }
 
     /**
