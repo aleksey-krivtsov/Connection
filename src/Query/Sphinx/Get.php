@@ -12,14 +12,14 @@ class Get extends Query
 
     private $index;
     private $search;
+    private $search_fields;
     private $limit;
     private $offset = 0;
     private $sort_field;
-    private $sort_order = \SORT_ASC;
+    private $sort_order;
     private $field_weights;
     private $filter;
     private $match_mode;
-    private $is_escape = true;
 
     /**
      * @var array|bool
@@ -29,6 +29,42 @@ class Get extends Query
      * @var bool|null
      */
     private $success;
+
+    public function __construct()
+    {
+        class_exists('\\SphinxClient');
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAllowedMatchModes()
+    {
+        return [
+            \SPH_MATCH_ALL,
+            \SPH_MATCH_ANY,
+            \SPH_MATCH_PHRASE,
+            \SPH_MATCH_BOOLEAN,
+            \SPH_MATCH_EXTENDED,
+            \SPH_MATCH_FULLSCAN,
+            \SPH_MATCH_EXTENDED2
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAllowedSortOrders()
+    {
+        return [
+            \SPH_SORT_RELEVANCE,
+            \SPH_SORT_ATTR_DESC,
+            \SPH_SORT_ATTR_ASC,
+            \SPH_SORT_TIME_SEGMENTS,
+            \SPH_SORT_EXTENDED,
+            \SPH_SORT_EXPR
+        ];
+    }
 
     /**
      * @param string $name
@@ -43,11 +79,13 @@ class Get extends Query
 
     /**
      * @param string $str
+     * @param array $fields
      * @return self
      */
-    public function setSearchString($str)
+    public function setSearchString($str, array $fields = [])
     {
         $this->search = $str;
+        $this->search_fields = $fields;
 
         return $this;
     }
@@ -70,32 +108,47 @@ class Get extends Query
      * @param int $order
      * @return self
      */
-    public function setOrder($field, $order = \SORT_ASC)
+    public function setOrder($field, $order = \SPH_SORT_ATTR_ASC)
     {
-        $this->sort_field = $field;
-        $this->sort_order = $order;
+        if (in_array($order, $this->getAllowedSortOrders())) {
+            $this->sort_field = $field;
+            $this->sort_order = $order;
+        }
 
         return $this;
     }
 
     /**
-     * @param array $field_weights
-     * @return $this
+     * @param string $sort
+     * @return self
      */
-    public function setFieldWeights(array $field_weights)
+    public function setOrderExpr($sort)
     {
-        $this->field_weights = $field_weights;
+        $this->sort_field = $sort;
+        $this->sort_order = \SPH_SORT_EXPR;
+
+        return $this;
+    }
+
+    /**
+     * @param $field
+     * @param $value
+     * @return self
+     */
+    public function setFieldWeight($field, $value)
+    {
+        $this->field_weights[$field] = $value;
 
         return $this;
     }
 
     /**
      * @param $attribute
-     * @param $values
+     * @param array $values
      * @param bool $exclude
-     * @return $this
+     * @return self
      */
-    public function addFilter($attribute, $values, $exclude = false)
+    public function addFilter($attribute, array $values, $exclude = false)
     {
         $this->filter[$attribute] = [
             self::FILTER_VALUES => $values,
@@ -107,30 +160,13 @@ class Get extends Query
 
     /**
      * @param $match_mode
-     * @return $this
+     * @return self
      */
     public function setMatchMode($match_mode)
     {
-        $this->match_mode = $match_mode;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMatchMode()
-    {
-        return $this->match_mode == \SORT_REGULAR ? \SPH_MATCH_EXTENDED : \SPH_MATCH_ALL;
-    }
-
-    /**
-     * @param bool $is_escape
-     * @return $this
-     */
-    public function setEscape($is_escape = true)
-    {
-        $this->is_escape = (bool) $is_escape;
+        if (in_array($match_mode, $this->getAllowedMatchModes())) {
+            $this->match_mode = $match_mode;
+        }
 
         return $this;
     }
@@ -143,6 +179,9 @@ class Get extends Query
         return $this->getResponse();
     }
 
+    /**
+     * @return array|bool
+     */
     protected function getResponse()
     {
         if (!$this->hasResponse()) {
@@ -155,7 +194,7 @@ class Get extends Query
 
             if (isset($sph)) {
                 if ($this->sort_field) {
-                    $sph->SetSortMode($this->getSortOrder(), $this->sort_field);
+                    $sph->SetSortMode($this->sort_order, $this->sort_field);
                 }
 
                 if ($this->limit) {
@@ -166,22 +205,17 @@ class Get extends Query
                     $sph->SetFieldWeights($this->field_weights);
                 }
 
-                if ($this->filter) {
-                    foreach($this->filter as $attr => $data) {
+                if (!empty($this->filter)) {
+                    foreach ($this->filter as $attr => $data) {
                         $sph->SetFilter($attr, $data[self::FILTER_VALUES], $data[self::FILTER_EXCLUDE]);
                     }
                 }
 
-                if ($this->match_mode) {
-                    $sph->SetMatchMode($this->getMatchMode());
+                if (!is_null($this->match_mode)) {
+                    $sph->SetMatchMode($this->match_mode);
                 }
 
-                if ($this->is_escape) {
-                    $this->search = $this->prepareQuery($this->search);
-                }
-
-                $sph->addQuery($this->search, $this->index);
-
+                $sph->addQuery($this->getQuery(), $this->index);
 
                 $this->response = $sph->runQueries();
                 $this->success = $this->response !== false;
@@ -192,23 +226,29 @@ class Get extends Query
     }
 
     /**
-     * @param string $query
      * @return string
      */
-    protected function prepareQuery($query)
+    protected function getQuery()
     {
         $sph = $this->getResource();
+        $this->search = $sph->EscapeString($this->search);
+        $query = $this->search;
 
-        if (isset($sph)) {
-            $query = htmlspecialchars_decode(stripslashes($query));
-            $query = strtolower(trim(str_replace('"', '', $query)));
-            //@TODO проверить: в sphinxapi похоже бага с эскейпингом слеша
-            $query = str_replace('/', ' ', $query);
+        if (!empty($this->search)) {
+            if (!empty($this->search_fields)) {
+                $fields = '@(' . implode(',', $this->search_fields) . ')';
+            } else {
+                $fields = '@*';
+            }
+            $query = $fields . ' ' . $this->search;
         }
 
-        return $sph->EscapeString($query);
+        return $query;
     }
 
+    /**
+     * @return bool
+     */
     private function hasResponse()
     {
         return $this->success !== null;
@@ -221,18 +261,6 @@ class Get extends Query
     protected function getResource()
     {
         return parent::getResource();
-    }
-
-    /**
-     * @return int
-     */
-    private function getSortOrder()
-    {
-        if ($this->sort_order != \SORT_REGULAR) {
-            return $this->sort_order == \SORT_DESC ? \SPH_SORT_ATTR_DESC : \SPH_SORT_ATTR_ASC;
-        } else {
-            return \SPH_SORT_EXPR;
-        }
     }
 
     /**
