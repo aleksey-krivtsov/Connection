@@ -12,6 +12,12 @@ class Sphinx implements IResource
     private $host;
     private $port;
 
+    public function __construct()
+    {
+        //for sphinx constants autoload
+        class_exists('\\SphinxClient');
+    }
+
     /**
      * @inheritdoc
      */

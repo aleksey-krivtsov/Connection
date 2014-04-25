@@ -18,7 +18,7 @@ class Get extends Query
     private $sort_field;
     private $sort_order;
     private $field_weights;
-    private $filter;
+    private $filter = [];
     private $match_mode;
 
     /**
@@ -29,42 +29,6 @@ class Get extends Query
      * @var bool|null
      */
     private $success;
-
-    public function __construct()
-    {
-        class_exists('\\SphinxClient');
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAllowedMatchModes()
-    {
-        return [
-            \SPH_MATCH_ALL,
-            \SPH_MATCH_ANY,
-            \SPH_MATCH_PHRASE,
-            \SPH_MATCH_BOOLEAN,
-            \SPH_MATCH_EXTENDED,
-            \SPH_MATCH_FULLSCAN,
-            \SPH_MATCH_EXTENDED2
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAllowedSortOrders()
-    {
-        return [
-            \SPH_SORT_RELEVANCE,
-            \SPH_SORT_ATTR_DESC,
-            \SPH_SORT_ATTR_ASC,
-            \SPH_SORT_TIME_SEGMENTS,
-            \SPH_SORT_EXTENDED,
-            \SPH_SORT_EXPR
-        ];
-    }
 
     /**
      * @param string $name
@@ -107,13 +71,12 @@ class Get extends Query
      * @param string $field
      * @param int $order
      * @return self
+     * @see \SphinxClient::SetSortMode()
      */
     public function setOrder($field, $order = \SPH_SORT_ATTR_ASC)
     {
-        if (in_array($order, $this->getAllowedSortOrders())) {
-            $this->sort_field = $field;
-            $this->sort_order = $order;
-        }
+        $this->sort_field = $field;
+        $this->sort_order = $order;
 
         return $this;
     }
@@ -161,12 +124,11 @@ class Get extends Query
     /**
      * @param $match_mode
      * @return self
+     * @see \SphinxClient::SetMatchMode()
      */
     public function setMatchMode($match_mode)
     {
-        if (in_array($match_mode, $this->getAllowedMatchModes())) {
-            $this->match_mode = $match_mode;
-        }
+        $this->match_mode = $match_mode;
 
         return $this;
     }
@@ -205,10 +167,8 @@ class Get extends Query
                     $sph->SetFieldWeights($this->field_weights);
                 }
 
-                if (!empty($this->filter)) {
-                    foreach ($this->filter as $attr => $data) {
-                        $sph->SetFilter($attr, $data[self::FILTER_VALUES], $data[self::FILTER_EXCLUDE]);
-                    }
+                foreach ($this->filter as $attr => $data) {
+                    $sph->SetFilter($attr, $data[self::FILTER_VALUES], $data[self::FILTER_EXCLUDE]);
                 }
 
                 if (!is_null($this->match_mode)) {
@@ -292,7 +252,7 @@ class Get extends Query
      */
     public function getCount()
     {
-        return $this->isError() ? null : sizeof($this->getResponse()[0]['matches']);
+        return $this->isError() ? null : (!isset($this->getResponse()[0]['matches']) ? 0 : sizeof($this->getResponse()[0]['matches']));
     }
 
     /**
