@@ -33,6 +33,10 @@
         "respect/validation": "@stable"
     },
 
+    "suggest": {
+        "neutron/sphinxsearch-api": "Add into your composer.json right version of SphinxAPI accordingly to your sphinx server"
+    },
+
     "require-dev": {
         "phpunit/phpunit": "4.0.*",
         "couchbase/php-ext-couchbase": "dev-master",
