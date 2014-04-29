@@ -19,9 +19,9 @@ class GetTest extends \PHPUnit_Framework_TestCase
     private $field_weights = [
         'title' => 100
     ];
-    private $filter = [
-        'filter_content_id' => ['values' => 3, 'exclude' => false]
-    ];
+    private $filter = ['field' => 'filter_content_id', 'values' => [3]];
+    private $filter_and = ['field' => 'mva_ids', 'values' => [70, 14]];
+    private $filter_not = ['field' => 'filter_content_id', 'values' => [54, 2, 1]];
     private $limit = 3;
     private $offset = 6;
     private $response = '[{
@@ -131,7 +131,10 @@ class GetTest extends \PHPUnit_Framework_TestCase
     {
         $this->query
             ->setResource($this->getResource(false, false, false, false, true))
-            ->addFilter('filter_content_id', [3]);
+            ->addFilter($this->filter['field'], $this->filter['values'])
+            ->addFilter($this->filter_and['field'], $this->filter_and['values'], Get::FILTER_IMPLODE_AND)
+            ->addFilter($this->filter_not['field'], $this->filter_not['values'], Get::FILTER_EXCLUDE)
+        ;
 
         $this->query->execute();
     }
@@ -189,11 +192,17 @@ class GetTest extends \PHPUnit_Framework_TestCase
      * @param bool $use_match
      * @return IResource
      */
-    private function getResource($use_limit = false, $use_sort = false, $use_sort_expr = false, $use_field_weights = false, $use_filter = false, $use_match = false)
-    {
+    private function getResource(
+        $use_limit = false,
+        $use_sort = false,
+        $use_sort_expr = false,
+        $use_field_weights = false,
+        $use_filter = false,
+        $use_match = false
+    ) {
         $sph = $this->getMock(
             '\\SphinxClient',
-            array('runQueries', 'addQuery', 'SetSortMode', 'SetLimits', 'SetFieldWeights', 'SetFilter', 'SetMatchMode')
+            array('runQueries', 'addQuery', 'SetSelect', 'SetSortMode', 'SetLimits', 'SetFieldWeights', 'SetFilter', 'SetMatchMode')
         );
 
         if ($use_limit) {
@@ -222,8 +231,11 @@ class GetTest extends \PHPUnit_Framework_TestCase
 
         if ($use_filter) {
             $sph->expects($this->once())
+                ->method('SetSelect')
+                ->with('*, (IN (filter_content_id, 3)) AND (IN (mva_ids, 70) AND IN (mva_ids, 14)) AND  NOT (IN (filter_content_id, 54, 2, 1)) AS _filter');
+            $sph->expects($this->once())
                 ->method('SetFilter')
-                ->with('filter_content_id', [$this->filter['filter_content_id']['values']], $this->filter['filter_content_id']['exclude']);
+                ->with('_filter', array(1));
         }
 
         if ($use_match) {
@@ -233,7 +245,7 @@ class GetTest extends \PHPUnit_Framework_TestCase
         }
 
         $sph
-            ->expects($this->at(0 + $use_limit + $use_sort + $use_sort_expr + $use_field_weights + $use_filter + $use_match))
+            ->expects($this->at(0 + $use_limit + $use_sort + $use_sort_expr + $use_field_weights + $use_filter*2 + $use_match))
             ->method('addQuery')
             ->with('', $this->index);
         $sph
