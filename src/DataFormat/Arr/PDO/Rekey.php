@@ -16,6 +16,8 @@ class Rekey implements IArr
     private $key_name;
     private $value_name;
 
+    private $grouping = true;
+
     public function setData($data)
     {
         $this->data = $data;
@@ -38,8 +40,14 @@ class Rekey implements IArr
                 }
 
                 if ($this->key_name) {
-                    $result[$row[$this->key_name]][] =
-                        $this->value_name ? $row[$this->value_name] : $cutted;
+                    if ($this->grouping) {
+                        $result[$row[$this->key_name]][] =
+                            $this->value_name ? $row[$this->value_name] : $cutted;
+                    } else {
+                        $result[$row[$this->key_name]] =
+                            $this->value_name ? $row[$this->value_name] : $cutted;
+                    }
+
                 } else {
                     $result[] = $this->value_name ? $row[$this->value_name] : $cutted;
                 }
@@ -69,6 +77,13 @@ class Rekey implements IArr
 
     public function formatValue()
     {
+    }
+
+    public function setGrouping($grouping = true)
+    {
+        $this->grouping = $grouping;
+
+        return $this;
     }
 
 }
