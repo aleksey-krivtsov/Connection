@@ -73,10 +73,10 @@ class Get extends Query
      * @return self
      * @see \SphinxClient::SetSortMode()
      */
-    public function setOrder($field, $order = \SPH_SORT_ATTR_ASC)
+    public function setOrder($field, $order = \SORT_ASC)
     {
         $this->sort_field = $field;
-        $this->sort_order = $order;
+        $this->sort_order = $order == \SORT_ASC ? \SPH_SORT_ATTR_ASC : \SPH_SORT_ATTR_DESC;
 
         return $this;
     }
