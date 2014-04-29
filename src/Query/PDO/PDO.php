@@ -83,7 +83,7 @@ abstract class PDO extends Query
     {
         if (!$this->hasResponse()) {
             try {
-                $stmt = $this->getStmt();
+                $stmt = $this->getStmt($this->getStatement(), $this->getParams());
             } catch (\Exception $e) {
                 $this->success = false;
                 $this->response = false;
@@ -98,36 +98,36 @@ abstract class PDO extends Query
         return $this->response;
     }
 
-    private function getStmt()
+    protected function getStmt($statement, array $params = array())
     {
         try {
-            $stmt = $this->getResource()->prepare($this->getStatement());
+            $stmt = $this->getResource()->prepare($statement);
         } catch (\PDOException $e) {
             throw $e;
         }
 
-        foreach ($this->getParams() as $i => $param) {
+        foreach ($params as $i => $param) {
             $stmt->bindValue($i + 1, $param, is_numeric($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
         }
 
         return $stmt;
     }
 
-    private function getStatement()
+    protected function getStatement()
     {
         $statement_id = key($this->statements);
 
         return vsprintf($this->statements[$statement_id], $this->placeholders[$statement_id]);
     }
 
-    private function getParams()
+    protected function getParams()
     {
         $statement_id = key($this->statements);
 
-        return $this->params[$statement_id];
+        return isset($this->params[$statement_id]) ? $this->params[$statement_id] : array();
     }
 
-    private function hasResponse()
+    protected function hasResponse()
     {
         return $this->success !== null;
     }
