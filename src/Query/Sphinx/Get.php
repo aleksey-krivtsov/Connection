@@ -7,8 +7,11 @@ use Imhonet\Connection\Query\Query;
 
 class Get extends Query
 {
-    const FILTER_VALUES = 'values';
-    const FILTER_EXCLUDE = 'exclude';
+    const FILTER_EXCLUDE = 1;
+    /** implode values of group via OR */
+    const FILTER_IMPLODE_AND = 2;
+    /** join group with previous sibling via OR */
+    const FILTER_JOINT_OR = 4;
 
     private $index;
     private $search;
@@ -108,14 +111,15 @@ class Get extends Query
     /**
      * @param $attribute
      * @param array $values
-     * @param bool $exclude
+     * @param int|null $flags
      * @return self
      */
-    public function addFilter($attribute, array $values, $exclude = false)
+    public function addFilter($attribute, array $values, $flags = null)
     {
-        $this->filter[$attribute] = [
-            self::FILTER_VALUES => $values,
-            self::FILTER_EXCLUDE => $exclude
+        $this->filter[] = [
+            'attr' => $attribute,
+            'values' => $values,
+            'flags' => $flags
         ];
 
         return $this;
@@ -167,8 +171,9 @@ class Get extends Query
                     $sph->SetFieldWeights($this->field_weights);
                 }
 
-                foreach ($this->filter as $attr => $data) {
-                    $sph->SetFilter($attr, $data[self::FILTER_VALUES], $data[self::FILTER_EXCLUDE]);
+                if ($this->filter) {
+                    $sph->SetSelect($sph->_select . ', ' . $this->getFilterExpr() . ' AS _filter');
+                    $sph->SetFilter('_filter', array(1));
                 }
 
                 if (!is_null($this->match_mode)) {
@@ -183,6 +188,33 @@ class Get extends Query
         }
 
         return $this->response;
+    }
+
+    private function getFilterExpr()
+    {
+        $result = '';
+
+        foreach ($this->filter as $i => $group) {
+            if ($group['flags'] & self::FILTER_IMPLODE_AND) {
+                $expr = 'IN (' . $group['attr'] . ', ' . implode(') AND IN (' . $group['attr'] . ', ', $group['values']) . ')';
+            } else {
+                $expr = 'IN (' . $group['attr'] . ', ' . implode(', ', $group['values']) . ')';
+            }
+
+            $expr = '(' . $expr . ')';
+
+            if ($group['flags'] & self::FILTER_EXCLUDE) {
+                $expr = ' NOT ' . $expr;
+            }
+
+            if ($i > 0) {
+                $expr = ($group['flags'] & self::FILTER_JOINT_OR ? ' OR ' : ' AND ') . $expr;
+            }
+
+            $result .= $expr;
+        }
+
+        return $result;
     }
 
     /**
