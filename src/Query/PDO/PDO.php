@@ -7,6 +7,7 @@ use Imhonet\Connection\Query\Query;
 
 abstract class PDO extends Query
 {
+    private $last_query;
     private $statements = array();
     private $params = array();
     private $placeholders = array();
@@ -27,6 +28,7 @@ abstract class PDO extends Query
     public function addStatement($statement)
     {
         $this->statements[] = $statement;
+        $this->placeholders[] = array();
 
         return $this;
     }
@@ -83,7 +85,7 @@ abstract class PDO extends Query
     {
         if (!$this->hasResponse()) {
             try {
-                $stmt = $this->getStmt();
+                $stmt = $this->getStmt($this->getStatement(), $this->getParams());
             } catch (\Exception $e) {
                 $this->success = false;
                 $this->response = false;
@@ -91,6 +93,7 @@ abstract class PDO extends Query
 
             if (isset($stmt)) {
                 $this->success = $stmt->execute();
+                $this->regLastQueryMain();
                 $this->response = $stmt;
             }
         }
@@ -98,36 +101,44 @@ abstract class PDO extends Query
         return $this->response;
     }
 
-    private function getStmt()
+    protected function getStmt($statement, array $params = array())
     {
         try {
-            $stmt = $this->getResource()->prepare($this->getStatement());
+            $stmt = $this->getResource()->prepare($statement);
         } catch (\PDOException $e) {
             throw $e;
         }
 
-        foreach ($this->getParams() as $i => $param) {
+        foreach ($params as $i => $param) {
             $stmt->bindValue($i + 1, $param, is_numeric($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
         }
 
         return $stmt;
     }
 
-    private function getStatement()
+    protected function getStatement()
     {
         $statement_id = key($this->statements);
 
         return vsprintf($this->statements[$statement_id], $this->placeholders[$statement_id]);
     }
 
-    private function getParams()
+    protected function changeStatement($from, $to)
+    {
+        $statement_id = key($this->statements);
+        $this->statements[$statement_id] = str_ireplace($from, $to, $this->statements[$statement_id], $count);
+
+        return (bool) $count;
+    }
+
+    protected function getParams()
     {
         $statement_id = key($this->statements);
 
-        return $this->params[$statement_id];
+        return isset($this->params[$statement_id]) ? $this->params[$statement_id] : array();
     }
 
-    private function hasResponse()
+    protected function hasResponse()
     {
         return $this->success !== null;
     }
@@ -138,12 +149,29 @@ abstract class PDO extends Query
      */
     protected function getResource()
     {
+        $this->resetLastQuery();
+
         return parent::getResource();
     }
 
     private function isError()
     {
         return $this->getResponse() === null || $this->success === false;
+    }
+
+    protected function isLastQueryMain()
+    {
+        return $this->last_query === true;
+    }
+
+    private function regLastQueryMain()
+    {
+        $this->last_query = true;
+    }
+
+    private function resetLastQuery()
+    {
+        $this->last_query = null;
     }
 
     /**
