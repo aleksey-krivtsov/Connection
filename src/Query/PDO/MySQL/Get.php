@@ -247,17 +247,6 @@ class Get extends PDO\Get
         return stripos($this->getStatement(), 'LIMIT ');
     }
 
-    //@todo isOffset
-
-    /*private function getStatementCount()
-    {
-        $stmt = $this->getStatement();
-        $start = stripos($stmt, 'SELECT ') + 7;
-        $end = stripos($stmt, 'FROM ') - 1;
-
-        return substr_replace($stmt, 'COUNT(*)', $start, $end - $start);
-    }*/
-
     /**
      * @return bool
      */
