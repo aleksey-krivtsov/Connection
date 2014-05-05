@@ -7,6 +7,7 @@ use Imhonet\Connection\Query\Query;
 
 abstract class PDO extends Query
 {
+    private $last_query;
     private $statements = array();
     private $params = array();
     private $placeholders = array();
@@ -27,6 +28,7 @@ abstract class PDO extends Query
     public function addStatement($statement)
     {
         $this->statements[] = $statement;
+        $this->placeholders[] = array();
 
         return $this;
     }
@@ -91,6 +93,7 @@ abstract class PDO extends Query
 
             if (isset($stmt)) {
                 $this->success = $stmt->execute();
+                $this->regLastQueryMain();
                 $this->response = $stmt;
             }
         }
@@ -120,6 +123,14 @@ abstract class PDO extends Query
         return vsprintf($this->statements[$statement_id], $this->placeholders[$statement_id]);
     }
 
+    protected function changeStatement($from, $to)
+    {
+        $statement_id = key($this->statements);
+        $this->statements[$statement_id] = str_ireplace($from, $to, $this->statements[$statement_id], $count);
+
+        return (bool) $count;
+    }
+
     protected function getParams()
     {
         $statement_id = key($this->statements);
@@ -138,12 +149,29 @@ abstract class PDO extends Query
      */
     protected function getResource()
     {
+        $this->resetLastQuery();
+
         return parent::getResource();
     }
 
     private function isError()
     {
         return $this->getResponse() === null || $this->success === false;
+    }
+
+    protected function isLastQueryMain()
+    {
+        return $this->last_query === true;
+    }
+
+    private function regLastQueryMain()
+    {
+        $this->last_query = true;
+    }
+
+    private function resetLastQuery()
+    {
+        $this->last_query = null;
     }
 
     /**

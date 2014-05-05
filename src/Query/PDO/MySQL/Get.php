@@ -10,7 +10,11 @@ use Imhonet\Connection\Query\PDO;
  */
 class Get extends PDO\Get
 {
-    const SQL_WRAP_COUNT = 'SELECT COUNT(*) FROM (%s) as temp';
+    const SQL_WRAP_COUNT = '
+        SELECT COUNT(*) FROM (
+            %s
+        ) as temp
+    ';
 
     private $count;
     private $count_total;
@@ -29,30 +33,54 @@ class Get extends PDO\Get
      */
     public function getCountTotal()
     {
-        $result = null;
+        if (!$this->hasCountTotal()) {
+            if ($this->isGroupBy() && $this->isLimit()) {
+                if ($this->isSCFR()) {
+                    $this->getResponse();
+                } elseif (!$this->isExecuted()) {
+                    $this->changeStatement('SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ');
+                    $this->getResponse();
+                } else {
+                    $stmt = $this->getStmt($this->getStatementSCFR(), $this->getParams());
+                    $stmt->execute();
+                }
 
-        if ($this->isSCFRRequired()) {
-            if (!$this->isSCFR()) {
-                //@todo change statement
+                $this->count_total = $this->getCountTotalAfterExecute();
+            } elseif ($this->isExecuted()) {
+                $this->count_total = $this->getCountTotalAfterExecute();
+            } elseif ($this->isLimit()) {
+                $this->count_total = $this->getCountTotalWithoutLimit();
+            } else {
+                $this->count_total = $this->getCount();
             }
-
-            //@todo check isExecuted
-            $this->getResponse();
-            $result = $this->getFoundRows();
-        } elseif ($this->isExecuted()) {
-            $result = $this->getFoundRows();
-        } elseif ($this->isGroupBy() && !$this->isLimit()) {
-            $result = $this->getSelectCount();
-        } elseif ($this->isLimit()) { //@todo check offset
-            //@todo cut offset
-        } else {
-            $result = $this->getCount();
         }
 
-        return $result;
+        return $this->count_total;
     }
 
-    private function hasCountTotal()
+    private function getCountTotalAfterExecute()
+    {
+        try {
+            $found_rows = $this->getFoundRows();
+        } catch (\PDOException $e) {
+            $this->err_count_total = $e;
+        }
+
+        return isset($found_rows) ? $found_rows : $this->count_total;
+    }
+
+    private function getCountTotalWithoutLimit()
+    {
+        try {
+            $result = $this->getSelectCountTotal();
+        } catch (\PDOException $e) {
+            $this->err_count_total = $e;
+        }
+
+        return isset($result) ? $result : $this->count_total;
+    }
+
+    protected function hasCountTotal()
     {
         return $this->count_total !== null || $this->err_count_total !== null;
     }
@@ -88,9 +116,9 @@ class Get extends PDO\Get
 
     private function getCountAfterCountTotal()
     {
-        list($offset, $limit) = $this->getOffsetWithLimit();
-        $diff = $this->count_total - $offset;
-        return $diff > $limit ? $limit : $diff;
+        $offset_limit = $this->getOffsetWithLimit();
+        $diff = $this->getCountTotal() - $offset_limit['offset'];
+        return $diff > $offset_limit['limit'] ? $offset_limit['limit'] : $diff;
     }
 
     private function getCountWrapped()
@@ -133,7 +161,20 @@ class Get extends PDO\Get
         return $result;
     }
 
-    public function getOffsetWithLimit()
+    /**
+     * @return string
+     * @throws \PDOException
+     */
+    private function getSelectCountTotal()
+    {
+        $stmt = $this->getStmt($this->getStatementLimitless(), $this->getParams());
+        $stmt->execute();
+        $result = $stmt->fetchColumn($stmt->columnCount() - 1);
+
+        return $result;
+    }
+
+    private function getOffsetWithLimit()
     {
         $result = array('offset' => null, 'limit' => null);
 
@@ -171,6 +212,22 @@ class Get extends PDO\Get
         return sprintf(self::SQL_WRAP_COUNT, $this->getStatement());
     }
 
+    private function getStatementSCFR()
+    {
+        return str_ireplace('SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ', $this->getStatement());
+    }
+
+    private function getStatementLimitless()
+    {
+        $replace = array(
+            'FROM ' => ', COUNT(1) FROM ',
+            'LIMIT ' => '#LIMIT ',
+            'OFFSET ' => '#OFFSET ',
+        );
+
+        return strtr($this->getStatement(), $replace);
+    }
+
     /**
      * SQL_CALC_FOUND_ROWS check
      * @return bool
@@ -178,11 +235,6 @@ class Get extends PDO\Get
     private function isSCFR()
     {
         return stripos($this->getStatement(), 'SQL_CALC_FOUND_ROWS') !== false;
-    }
-
-    private function isSCFRRequired()
-    {
-        return $this->isGroupBy() && $this->isLimit();
     }
 
     private function isGroupBy()
@@ -207,19 +259,11 @@ class Get extends PDO\Get
     }*/
 
     /**
-     * @todo check last executed query
      * @return bool
      */
     private function isExecuted()
     {
-        return $this->hasResponse();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLastId()
-    {
+        return $this->isLastQueryMain();
     }
 
 }
