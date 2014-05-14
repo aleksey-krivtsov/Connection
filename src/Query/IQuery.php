@@ -6,6 +6,17 @@ use Imhonet\Connection\Resource\IResource;
 
 interface IQuery
 {
+    const STATUS_OK = 0;
+    const STATUS_ERROR = 1;
+    const STATUS_WARNING = 2;
+    const STATUS_NOTICE = 4;
+    const STATUS_INFO = 8;
+    const STATUS_TEMPORARY_UNAVAILABLE = 1024;
+    const STATUS_STALE_DATA = 2048;
+    const STATUS_INCONSISTENT_PARAMETERS = 4096;
+    const STATUS_INSUFFICIENT_DATA = 8192;
+    const STATUS_INCONSISTENT_DATA = 16384;
+
     /**
      * @param IResource $resource
      * @return self
