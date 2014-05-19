@@ -27,7 +27,7 @@ class Json implements IHash
      */
     public function formatData()
     {
-        return $this->isValid() ? $this->getDecoded() : array();
+        return $this->isValid() ? (array) $this->getDecoded() : array();
     }
 
     private function isValid()
@@ -37,12 +37,12 @@ class Json implements IHash
 
     private function isAssoc()
     {
-        return (bool) count(array_filter(array_keys($this->getDecoded()), 'is_string'));
+        return is_object($this->getDecoded());
     }
 
     private function getDecoded()
     {
-        return $this->data_decoded ? : $this->data_decoded = json_decode($this->data, true);
+        return $this->data_decoded ? : $this->data_decoded = json_decode($this->data);
     }
 
     /**
