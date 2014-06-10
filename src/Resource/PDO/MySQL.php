@@ -12,7 +12,7 @@ class MySQL extends PDO
     protected function getAttributes()
     {
         return array(
-            \PDO::ATTR_EMULATE_PREPARES => false,
+//            \PDO::ATTR_EMULATE_PREPARES => false,
         ) + parent::getAttributes();
     }
 
