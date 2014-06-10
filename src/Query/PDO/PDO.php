@@ -92,9 +92,15 @@ abstract class PDO extends Query
             }
 
             if (isset($stmt)) {
-                $this->success = $stmt->execute();
-                $this->regLastQueryMain();
                 $this->response = $stmt;
+
+                try {
+                    $this->success = $stmt->execute();
+                } catch (\PDOException $e) {
+                    $this->success = false;
+                }
+
+                $this->regLastQueryMain();
             }
         }
 
