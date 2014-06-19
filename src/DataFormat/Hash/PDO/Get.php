@@ -10,6 +10,7 @@ class Get implements IHash
      * @var \PDOStatement
      */
     private $data;
+    private $result;
 
     public function setData($data)
     {
@@ -20,13 +21,13 @@ class Get implements IHash
 
     public function formatData()
     {
-        if ($this->data) {
-            $result = $this->data->fetch(\PDO::FETCH_ASSOC);
-        } else {
-            $result = array();
+        if ($this->result === null) {
+            if (!$this->data || !$this->result = $this->data->fetch(\PDO::FETCH_ASSOC)) {
+                $this->result = array();
+            }
         }
 
-        return $result ? : array();
+        return $this->result;
     }
 
     public function formatValue()
