@@ -11,6 +11,8 @@ class Get implements IScalar
      * @var \PDOStatement
      */
     private $data;
+    private $result;
+    private $has_result = false;
 
     public function setData($data)
     {
@@ -26,7 +28,12 @@ class Get implements IScalar
 
     public function formatValue()
     {
-        return $this->data ? $this->data->fetchColumn() : null;
+        if (!$this->has_result) {
+            $this->result = $this->data ? $this->data->fetchColumn() : null;
+            $this->has_result = true;
+        }
+
+        return $this->result;
     }
 
 }

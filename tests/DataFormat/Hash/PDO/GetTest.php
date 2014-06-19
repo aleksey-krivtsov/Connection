@@ -7,6 +7,7 @@ use Imhonet\Connection\DataFormat\Hash\PDO\Get;
 
 class GetTest extends \PHPUnit_Framework_TestCase
 {
+    private $result = array('id' => 42);
     /**
      * @var IHash
      */
@@ -24,13 +25,20 @@ class GetTest extends \PHPUnit_Framework_TestCase
 
     public function testData()
     {
-        $this->formater->setData($this->getStmt());
-        $this->assertInternalType('array', $this->formater->formatData());
+        $this->formater->setData($this->getStmt($this->at(0)));
+        $this->assertEquals($this->result, $this->formater->formatData());
+    }
+
+    public function testReuse()
+    {
+        $this->formater->setData($this->getStmt($this->at(0)));
+        $this->formater->formatData();
+        $this->assertEquals($this->result, $this->formater->formatData());
     }
 
     public function testValue()
     {
-        $this->formater->setData($this->getStmt());
+        $this->formater->setData($this->getStmt($this->never()));
         $this->assertNull($this->formater->formatValue());
     }
 
@@ -40,9 +48,18 @@ class GetTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $this->formater->formatData());
     }
 
-    public function getStmt()
+    public function getStmt(\PHPUnit_Framework_MockObject_Matcher_Invocation $fetch)
     {
-        return $this->getMock('\\PDOStatement');
+        $mock = $this->getMock('\\PDOStatement', array('fetch'));
+
+        $mock
+            ->expects($fetch)
+            ->method('fetch')
+            ->with(\PDO::FETCH_ASSOC)
+            ->will($this->returnValue($this->result))
+        ;
+
+        return $mock;
     }
 
     protected function tearDown()
