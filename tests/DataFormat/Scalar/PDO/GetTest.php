@@ -26,13 +26,20 @@ class GetTest extends \PHPUnit_Framework_TestCase
 
     public function testData()
     {
-        $this->formater->setData($this->getStmt());
+        $this->formater->setData($this->getStmt($this->never()));
         $this->assertEquals(array(), $this->formater->formatData());
     }
 
     public function testValue()
     {
-        $this->formater->setData($this->getStmt());
+        $this->formater->setData($this->getStmt($this->at(0)));
+        $this->assertEquals(self::VALUE, $this->formater->formatValue());
+    }
+
+    public function testReuse()
+    {
+        $this->formater->setData($this->getStmt($this->at(0)));
+        $this->formater->formatValue();
         $this->assertEquals(self::VALUE, $this->formater->formatValue());
     }
 
@@ -42,11 +49,11 @@ class GetTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($this->formater->formatValue());
     }
 
-    public function getStmt()
+    public function getStmt(\PHPUnit_Framework_MockObject_Matcher_Invocation $fetch)
     {
         $stmt = $this->getMock('\\PDOStatement', array('fetchColumn'));
         $stmt
-            ->expects($this->any())
+            ->expects($fetch)
             ->method('fetchColumn')
             ->will($this->returnValue(self::VALUE))
         ;
