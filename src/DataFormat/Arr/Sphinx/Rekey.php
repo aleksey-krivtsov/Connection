@@ -12,7 +12,7 @@ namespace Imhonet\Connection\DataFormat\Arr\Sphinx;
 
 use Imhonet\Connection\DataFormat\IArr;
 
-class Rekey  implements IArr
+class Rekey implements IArr
 {
     /**
      * @var array|bool
