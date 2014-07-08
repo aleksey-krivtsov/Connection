@@ -43,4 +43,20 @@ abstract class Query implements IQuery
         return $resource;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getDebugInfo($type = self::INFO_TYPE_QUERY)
+    {
+        $result = '';
+
+        switch ($type) {
+            case self::INFO_TYPE_ERROR:
+                $result = $this->error ? $this->error->getMessage() : $result;
+                break;
+        }
+
+        return $result;
+    }
+
 }
