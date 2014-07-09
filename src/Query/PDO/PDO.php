@@ -87,6 +87,7 @@ abstract class PDO extends Query
             try {
                 $stmt = $this->getStmt($this->getStatement(), $this->getParams());
             } catch (\Exception $e) {
+                $this->error = $e;
                 $this->success = false;
                 $this->response = false;
             }
@@ -97,6 +98,7 @@ abstract class PDO extends Query
                 try {
                     $this->success = $stmt->execute();
                 } catch (\PDOException $e) {
+                    $this->error = $e;
                     $this->success = false;
                 }
 
@@ -186,6 +188,21 @@ abstract class PDO extends Query
     public function getErrorCode()
     {
         return (int) $this->isError();
+    }
+
+    public function getDebugInfo($type = self::INFO_TYPE_QUERY)
+    {
+        switch ($type) {
+            case self::INFO_TYPE_QUERY:
+                $stmt = str_replace('%', '%%', $this->getStatement());
+                $stmt = str_replace('?', ' "%s"', $stmt, $count);
+                $result = vsprintf($stmt, $this->getParams());
+                break;
+            default:
+                $result = parent::getDebugInfo($type);
+        }
+
+        return $result;
     }
 
 }

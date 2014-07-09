@@ -17,6 +17,9 @@ interface IQuery
     const STATUS_INSUFFICIENT_DATA = 8192;
     const STATUS_INCONSISTENT_DATA = 16384;
 
+    const INFO_TYPE_QUERY = 1;
+    const INFO_TYPE_ERROR = 2;
+
     /**
      * @param IResource $resource
      * @return self
@@ -47,4 +50,10 @@ interface IQuery
      * @return int|null
      */
     public function getLastId();
+
+    /**
+     * @param int $type self::INFO_TYPE_*
+     * @return string
+     */
+    public function getDebugInfo($type = self::INFO_TYPE_QUERY);
 }
