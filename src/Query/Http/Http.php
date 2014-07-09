@@ -147,4 +147,23 @@ abstract class Http extends Query
         return (int) $this->isError();
     }
 
+    public function getDebugInfo($type = self::INFO_TYPE_QUERY)
+    {
+        switch ($type) {
+            case self::INFO_TYPE_QUERY:
+                $params = array();
+
+                foreach ($this->getParams() as $values) {
+                    $params = array_merge($params, $values);
+                }
+
+                $result = $this->getUrl() . '?' . http_build_query($params);
+                break;
+            default:
+                $result = parent::getDebugInfo($type);
+        }
+
+        return $result;
+    }
+
 }
